@@ -9,21 +9,33 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends AppCompatActivity {
+import com.github.informramiz.mvplibrary.BaseMvpActivity;
+import com.github.informramiz.mvplibrary.base.IPresenter;
+
+import javax.inject.Inject;
+
+import dagger.Lazy;
+
+public class MainActivity extends MyBaseActivity<MainActivityContract.Presenter, MainActivityContract.View> implements MainActivityContract.View {
+
+    @Inject
+    Lazy<MainActivityContract.Presenter> presenterLazy;
+
+    FloatingActionButton mFab;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getActivityComponent().inject(this);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        mFab = (FloatingActionButton) findViewById(R.id.fab);
+        mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                getPresenter().onFabClicked();
             }
         });
     }
@@ -48,5 +60,16 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected MainActivityContract.Presenter onCreatePresenter() {
+        return presenterLazy.get();
+    }
+
+    @Override
+    public void showFabMessage() {
+        Snackbar.make(mFab, "Presenter invoked successfully", Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show();
     }
 }
